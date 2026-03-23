@@ -3,5 +3,7 @@
 #include "utils.hpp"
 #include <string>
 
-// Histogram (Option A): counts[i] for each bin label binLabels[i]
-void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* counts, std::string* binLabels, int sampleSize);
+// Histogram (computed):
+// samples[] is raw data. histogram() computes bin ranges + frequencies internally.
+// binCount controls how many bars (bins) to draw.
+void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* samples, int sampleSize, int binCount);
