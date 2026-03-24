@@ -10,7 +10,7 @@ static int max_value(int* values, int n){
 }
 
 void bargraph(sf::Image& canvas, sf::RenderTexture& rt, int* values, std::string* labels, int sampleSize){
-    // Plot area (matches linegraph style)
+    // Plot area 
     int left   = 80;
     int right  = 760;
     int top    = 50;
@@ -25,7 +25,7 @@ void bargraph(sf::Image& canvas, sf::RenderTexture& rt, int* values, std::string
     int largestY = max_value(values, sampleSize);
     if(largestY <= 0) largestY = 1;
 
-    // tens scaling (like linegraph)
+    // tens scaling 
     int tensY = 1;
     float tempY = (float)largestY;
     while(tempY > 1){

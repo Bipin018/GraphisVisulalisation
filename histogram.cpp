@@ -18,7 +18,7 @@ static int clamp_int(int v, int lo, int hi){
 }
 
 void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* samples, int sampleSize, int binCount){
-    // Plot area
+    // Histogram plot area
     int left   = 80;
     int right  = 760;
     int top    = 50;
@@ -31,7 +31,7 @@ void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* samples, int sampl
     if(sampleSize <= 0) return;
     if(binCount <= 0) return;
 
-    // --- compute min/max from raw samples ---
+    // min and max values of sample
     int minV = samples[0];
     int maxV = samples[0];
     for(int i = 1; i < sampleSize; i++){
@@ -39,45 +39,43 @@ void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* samples, int sampl
         if(samples[i] > maxV) maxV = samples[i];
     }
 
-    // If all values are the same, make a single-value range so we can build bins.
+    // If all values in sample are same
     if(minV == maxV){
         maxV = minV + 1;
     }
 
-    // Prevent too many bins for the available pixel width
-    // (still allow user binCount, but clamp to something reasonable)
+   //limits max no of bins
     binCount = clamp_int(binCount, 1, 50);
 
-    // Range size and bin width in "data space"
-    int range = maxV - minV;                // > 0 guaranteed
-    int binWidth = (range + binCount - 1) / binCount; // ceil(range / binCount)
+    int range = maxV - minV;                
+    int binWidth = (range + binCount - 1) / binCount;
     if(binWidth <= 0) binWidth = 1;
 
-    // Actual covered max based on binWidth * binCount
+  
     int coveredMax = minV + binWidth * binCount;
 
-    // --- compute frequency counts ---
+    // Count how many samples fall into each bin
     std::vector<int> counts(binCount, 0);
     for(int i = 0; i < sampleSize; i++){
         int v = samples[i];
         int idx = (v - minV) / binWidth;
         if(idx < 0) idx = 0;
-        if(idx >= binCount) idx = binCount - 1; // clamp max into last bin
+        if(idx >= binCount) idx = binCount - 1; 
         counts[idx]++;
     }
 
     int largestY = max_value(counts);
     if(largestY <= 0) largestY = 1;
 
-    // tens scaling (similar style to linegraph)
+    // scaling for Y axis based on largest Y
     int tensY = 1;
     float tempY = (float)largestY;
     while(tempY > 1){
         tempY /= 10;
         tensY *= 10;
     }
-
-    // bar width in pixels (bins touch)
+    tensY= largestY;
+    // bar width in pixels 
     int plotW = right - left;
     int barW = plotW / binCount;
     if(barW < 3) barW = 3;
@@ -86,7 +84,7 @@ void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* samples, int sampl
     text.setFillColor(sf::Color::Black);
     text.setCharacterSize(11);
 
-    // y ticks + labels (0..tensY)
+  
     for(int i = 0; i <= 10; i++){
         int yv = (tensY/10) * i;
         int py = bottom - (int)((float)yv / (float)tensY * (bottom - top));
@@ -110,11 +108,10 @@ void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* samples, int sampl
         draw_rect(canvas, x0, y0, barW, barH, col, true);
         draw_rect(canvas, x0, y0, barW, barH, sf::Color::Black, false);
 
-        // auto-generated bin label: "a-b"
+        // generates bin label
         int binStart = minV + i * binWidth;
         int binEnd   = binStart + binWidth - 1;
 
-        // Make the last bin end at coveredMax-1 for a clean label
         if(i == binCount - 1){
             binEnd = coveredMax - 1;
         }
@@ -123,11 +120,6 @@ void histogram(sf::Image& canvas, sf::RenderTexture& rt, int* samples, int sampl
         text.setPosition({(float)x0 + 2, (float)bottom + 8});
         rt.draw(text);
     }
-
-    // Optional: show min/max info (comment out if you don't want it)
-    // text.setString("min=" + std::to_string(minV) + " max=" + std::to_string(maxV));
-    // text.setPosition({(float)left, 10.0f});
-    // rt.draw(text);
 
     rt.display();
 }
